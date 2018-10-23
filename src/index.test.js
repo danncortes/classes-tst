@@ -40,12 +40,12 @@ describe('Test School Models', () => {
 
   it('Should have Students', () => {
     const expected = [
-      { id: 1, name: 'Jhon' },
-      { id: 2, name: 'Peter' },
-      { id: 3, name: 'Anna' },
-      { id: 4, name: 'Rebecca' },
-      { id: 5, name: 'Tom' },
-      { id: 6, name: 'Rick' },
+      { id: 1, name: 'Jhon', quizzes: [] },
+      { id: 2, name: 'Peter', quizzes: [] },
+      { id: 3, name: 'Anna', quizzes: [] },
+      { id: 4, name: 'Rebecca', quizzes: [] },
+      { id: 5, name: 'Tom', quizzes: [] },
+      { id: 6, name: 'Rick', quizzes: [] },
     ];
     expect(students).toEqual(expected);
   });
@@ -69,9 +69,9 @@ describe('Test School Models', () => {
     const quizzes = [];
 
     const qnaQuiz1 = [
-      new Qna('2 countries in america', ['Argentina', 'usa', 'italy', 'Rusia'], [0, 1]),
-      new Qna('2 countries in Asia', ['Chile', 'Nigeria', 'China', 'Japan'], [2, 3]),
-      new Qna('2 countries in Africa', ['Camerun', 'Brasil', 'China', 'Nigeria'], [0, 2]),
+      new Qna(1, '2 countries in america', ['Argentina', 'usa', 'italy', 'Rusia'], [0, 1]),
+      new Qna(2, '2 countries in Asia', ['Chile', 'Nigeria', 'China', 'Japan'], [2, 3]),
+      new Qna(3, '2 countries in Africa', ['Camerun', 'Brasil', 'China', 'Nigeria'], [0, 2]),
     ];
 
     teachers[0].createQuiz(1, quizzes, 'Countries In continents', qnaQuiz1);
@@ -84,14 +84,17 @@ describe('Test School Models', () => {
           teacher: { id: 1, name: 'X professor' },
           qna: [
             {
+              id: 1,
               question: '2 countries in america',
               options: ['Argentina', 'usa', 'italy', 'Rusia'],
               answers: [0, 1],
             }, {
+              id: 2,
               question: '2 countries in Asia',
               options: ['Chile', 'Nigeria', 'China', 'Japan'],
               answers: [2, 3],
             }, {
+              id: 3,
               question: '2 countries in Africa',
               options: ['Camerun', 'Brasil', 'China', 'Nigeria'],
               answers: [0, 2],
@@ -100,6 +103,21 @@ describe('Test School Models', () => {
         },
       ];
       expect(quizzes).toEqual(expected);
+    });
+
+    it('Should assing quizzes to student', () => {
+      const expected = {
+        quizzes: [{
+          id: 1,
+          name: 'Countries In continents',
+          qualification: 0,
+          qna: [{ id: 1, rightAnswers: [0, 1], studentAnswer: [] },
+            { id: 2, rightAnswers: [2, 3], studentAnswer: [] },
+            { id: 3, rightAnswers: [0, 2], studentAnswer: [] }],
+        }],
+      };
+      students[1].assignQuiz(quizzes, 1);
+      expect(students[1].quizzes).toEqual(expected.quizzes);
     });
   });
 });
