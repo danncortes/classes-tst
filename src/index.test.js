@@ -21,7 +21,6 @@ describe('Test School Models', () => {
     new Student(6, 'Rick'),
   ];
 
-
   it('Should have Teachers', () => {
     const expected = [
       { id: 1, name: 'X professor' },
@@ -55,9 +54,9 @@ describe('Test School Models', () => {
         teacherId: 1,
         quizzes: [],
         students: [
-          { id: 1, quizzes: [] },
-          { id: 2, quizzes: [] },
-          { id: 3, quizzes: [] },
+          { id: 1, quizzes: [], grade: 0 },
+          { id: 2, quizzes: [], grade: 0 },
+          { id: 3, quizzes: [], grade: 0 },
         ],
       },
     ];
@@ -75,7 +74,7 @@ describe('Test School Models', () => {
       new Classes(1, 'Maths', 1, [1, 2, 3]),
     ];
 
-    it('Should create quizzes and assing not students', () => {
+    it('Should create quizzes and assing to students', () => {
       teachers[0].createQuiz(classes, 1, 'Countries In continents', 1, qnaQuiz1);
 
       const expected = [
@@ -108,6 +107,7 @@ describe('Test School Models', () => {
           students: [
             {
               id: 1,
+              grade: 0,
               quizzes: [{
                 id: 1,
                 name: 'Countries In continents',
@@ -120,6 +120,7 @@ describe('Test School Models', () => {
             },
             {
               id: 2,
+              grade: 0,
               quizzes: [{
                 id: 1,
                 name: 'Countries In continents',
@@ -132,6 +133,7 @@ describe('Test School Models', () => {
             },
             {
               id: 3,
+              grade: 0,
               quizzes: [{
                 id: 1,
                 name: 'Countries In continents',
@@ -148,7 +150,7 @@ describe('Test School Models', () => {
       expect(classes).toEqual(expected);
     });
 
-    it('Should student submit answer', () => {
+    it('Should student submit answer and calculate current grade in class', () => {
       const expected = [
         {
           id: 1,
@@ -165,24 +167,19 @@ describe('Test School Models', () => {
             }],
           }],
           students: [{
+            grade: 0,
             id: 1,
             quizzes: [{
               baseQualification: 100, id: 1, name: 'Countries In continents', qna: [{ id: 1, rightAnswers: [0, 1], studentAnswer: [] }, { id: 2, rightAnswers: [2, 3], studentAnswer: [] }, { id: 3, rightAnswers: [0, 2], studentAnswer: [] }], qualification: 0,
             }],
           }, {
+            grade: 66.66,
             id: 2,
-            quizzes: [
-              {
-                baseQualification: 100,
-                id: 1,
-                name: 'Countries In continents',
-                qna: [
-                  { id: 1, rightAnswers: [0, 1], studentAnswer: [] },
-                  { id: 2, rightAnswers: [2, 3], studentAnswer: [] },
-                  { id: 3, rightAnswers: [0, 2], studentAnswer: [0, 2] }],
-                qualification: 33.33,
-              }],
+            quizzes: [{
+              baseQualification: 100, id: 1, name: 'Countries In continents', qna: [{ id: 1, rightAnswers: [0, 1], studentAnswer: [] }, { id: 2, rightAnswers: [2, 3], studentAnswer: [2, 3] }, { id: 3, rightAnswers: [0, 2], studentAnswer: [0, 2] }], qualification: 66.66,
+            }],
           }, {
+            grade: 0,
             id: 3,
             quizzes: [{
               baseQualification: 100, id: 1, name: 'Countries In continents', qna: [{ id: 1, rightAnswers: [0, 1], studentAnswer: [] }, { id: 2, rightAnswers: [2, 3], studentAnswer: [] }, { id: 3, rightAnswers: [0, 2], studentAnswer: [] }], qualification: 0,
@@ -192,6 +189,7 @@ describe('Test School Models', () => {
         },
       ];
       students[1].submitAnswer(classes, 1, 1, 3, [0, 2]);
+      students[1].submitAnswer(classes, 1, 1, 2, [2, 3]);
       expect(classes).toEqual(expected);
     });
   });

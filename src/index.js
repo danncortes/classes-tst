@@ -13,6 +13,11 @@ export class Student {
         if (quizzIndex !== undefined) {
           classes[classIndex].students[studentIndex].quizzes[quizzIndex].submitAnswer(qnaId, answer);
         }
+
+        let totalQa = 0;
+        const nQuizzes = classes[classIndex].students[studentIndex].quizzes.length;
+        classes[classIndex].students[studentIndex].quizzes.forEach((qa) => { totalQa += qa.qualification; });
+        classes[classIndex].students[studentIndex].grade = totalQa / nQuizzes;
       }
     }
   }
@@ -70,7 +75,7 @@ export class Classes {
   createStudents(students) {
     const structure = [];
     students.forEach((el) => {
-      structure.push({ id: el, quizzes: [] });
+      structure.push({ id: el, quizzes: [], grade: 0 });
     });
     return structure;
   }
@@ -134,3 +139,4 @@ const qnaQuiz2 = [
 
 teachers[0].createQuiz(classes, 1, 'Countries In continents', 1, qnaQuiz1);
 students[1].submitAnswer(classes, 1, 1, 3, [0, 2]);
+console.log(classes);
