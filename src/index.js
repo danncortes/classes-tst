@@ -2,7 +2,19 @@ export class Student {
   constructor(id, name) {
     this.id = id;
     this.name = name;
-    this.quizzes = [];
+  }
+
+  submitAnswer(classes, classId, quizId, qnaId, answer) {
+    const classIndex = classes.findIndex(cls => cls.id === classId);
+    if (classIndex !== undefined) {
+      const studentIndex = classes[classIndex].students.findIndex(st => st.id === this.id);
+      if (studentIndex !== undefined) {
+        const quizzIndex = classes[classIndex].students[studentIndex].quizzes.findIndex(qz => qz.id === quizId);
+        if (quizzIndex !== undefined) {
+          classes[classIndex].students[studentIndex].quizzes[quizzIndex].submitAnswer(qnaId, answer);
+        }
+      }
+    }
   }
 }
 
@@ -10,20 +22,65 @@ export class Teacher {
   constructor(id, name) {
     this.id = id;
     this.name = name;
-    this.quizzes = [];
-    this.classes = [];
   }
 
-  createQuiz(id, name, classId, qna) {
-    this.quizzes.push(new Quiz(id, name, classId, qna));
+  createQuiz(classes, id, name, classId, qna) {
+    const classIndex = classes.findIndex(cls => cls.id === classId);
+    if (classIndex != undefined) {
+      classes[classIndex].addQuizz(id, name, qna);
+    }
+  }
+}
+
+class quizToSave {
+  constructor(id, name, qa, qna) {
+    this.id = id;
+    this.name = name;
+    this.qualification = 0;
+    this.baseQualification = qa;
+    this.qna = qna.map(q => ({
+      id: q.id,
+      rightAnswers: q.answers,
+      studentAnswer: [],
+    }));
+  }
+
+  submitAnswer(qnaId, answer) {
+    const qIndex = this.qna.findIndex(q => q.id === qnaId);
+    if (qIndex >= 0) {
+      this.qna[qIndex].studentAnswer = [...answer.sort()];
+      const nQuestions = this.qna.length;
+      let points = 0;
+      const question = this.qna.find(qNa => qNa.id === qnaId);
+      points = question.rightAnswers.toString() === question.studentAnswer.toString() ? 1 : 0;
+      this.qualification += Number(parseFloat(points * this.baseQualification / nQuestions).toFixed(2));
+    }
   }
 }
 
 export class Classes {
-  constructor(id, name, students) {
+  constructor(id, name, teacherId, students) {
     this.id = id;
     this.name = name;
-    this.students = students;
+    this.teacherId = teacherId;
+    this.students = this.createStudents(students);
+    this.quizzes = [];
+  }
+
+  createStudents(students) {
+    const structure = [];
+    students.forEach((el) => {
+      structure.push({ id: el, quizzes: [] });
+    });
+    return structure;
+  }
+
+  addQuizz(id, name, qna) {
+    this.quizzes.push(new Quiz(id, name, qna));
+    this.students.forEach((student, key) => {
+      const quiz = new quizToSave(id, name, 100, qna);
+      this.students[key].quizzes.push(quiz);
+    });
   }
 }
 
@@ -37,41 +94,10 @@ export class Qna {
 }
 
 export class Quiz {
-  constructor(id, name, classId, qna) {
+  constructor(id, name, qna) {
     this.id = id;
-    this.classId = classId;
     this.name = name;
     this.qna = qna;
-  }
-
-  assignQuiz(studentId) {
-    const studentIndx = students.findIndex(stud => stud.id === studentId);
-    const quizToSave = {
-      id: this.id,
-      name: this.name,
-      class: this.classId,
-      qualification: 0,
-      submitAnswer: this.submitAnswer,
-      baseQualification: 100,
-      qna: this.qna.map(q => ({
-        id: q.id,
-        rightAnswers: q.answers,
-        studentAnswer: [],
-      })),
-    };
-    students[studentIndx].quizzes.push(quizToSave);
-  }
-
-  submitAnswer(qnaId, answer) {
-    const qIndex = this.qna.findIndex(q => q.id === qnaId);
-    if (qIndex >= 0) {
-      this.qna[qIndex].studentAnswer = [...answer.sort()];
-      const nQuestions = this.qna.length;
-      let points = 0;
-      const question = this.qna.find(qNa => qNa.id === qnaId);
-      points = question.rightAnswers.toString() === question.studentAnswer.toString() ? 1 : 0;
-      this.qualification += Number(parseFloat(points * this.baseQualification / nQuestions).toFixed(2));
-    }
   }
 }
 
@@ -90,10 +116,8 @@ const students = [
   new Student(6, 'Rick'),
 ];
 
-teachers[0].classes = [
-  new Classes(1, 'Maths', [1, 2, 3]),
-  new Classes(2, 'workout', [3, 4, 5]),
-  new Classes(3, 'Physic', [4, 5, 6]),
+const classes = [
+  new Classes(1, 'Maths', 1, [1, 2, 3]),
 ];
 
 const qnaQuiz1 = [
@@ -102,11 +126,11 @@ const qnaQuiz1 = [
   new Qna(3, '2 countries in Africa', ['Camerun', 'Brasil', 'China', 'Nigeria'], [0, 2]),
 ];
 
-teachers[0].createQuiz(1, 'Countries In continents', 1, qnaQuiz1);
+const qnaQuiz2 = [
+  new Qna(1, '2 cities in america', ['NY', 'Medellin', 'Rome', 'Madrid'], [0, 1]),
+  new Qna(2, '2 cities in Asia', ['Manila', 'Berlin', 'Tokio', 'Sao Paulo'], [0, 2]),
+  new Qna(3, '1 city in Africa', ['Nairobi', 'Buenos Aires', 'Chicago', 'Barcelona'], [0]),
+];
 
-teachers[0].quizzes[0].assignQuiz(1);
-students[0].quizzes[0].submitAnswer(1, [0, 1]);
-students[0].quizzes[0].submitAnswer(2, [0, 1]);
-console.log(students[0]);
-// students[1].submitQuizAnswer(1, 2, [0, 1]);
-// console.log(students[1]);
+teachers[0].createQuiz(classes, 1, 'Countries In continents', 1, qnaQuiz1);
+students[1].submitAnswer(classes, 1, 1, 3, [0, 2]);
